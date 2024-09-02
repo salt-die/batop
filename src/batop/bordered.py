@@ -32,7 +32,7 @@ class Bordered(Text):
         left_header: Gadget | str | None = None,
         center_header: Gadget | str | None = None,
         right_header: Gadget | str | None = None,
-        border: Border = "light",
+        border: Border = "curved",
         **kwargs,
     ):
         super().__init__(**kwargs)
