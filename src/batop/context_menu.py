@@ -10,11 +10,7 @@ from batgrl.gadgets.grid_layout import GridLayout
 from batgrl.gadgets.text import Point, Size, Text, new_cell, str_width
 from batgrl.terminal.events import MouseEvent
 
-from .colors import (
-    MENU_FG,
-    MENU_HOVER_BG,
-    MENU_NORMAL_BG,
-)
+from .colors import MENU_FG, MENU_HOVER_BG, MENU_NORMAL_BG
 
 ItemCallback = Callable[[], None]
 type MenuDict = dict[tuple[str, str], ItemCallback | MenuDict]

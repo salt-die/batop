@@ -15,11 +15,16 @@ def format_mem(mem: float) -> str:
     TRILLION = 1_000_000_000_000
     BILLION = 1_000_000_000
     MILLION = 1_000_000
+    THOUSAND = 1_000
     if mem >= TRILLION:
         return f"{mem / TRILLION:.3g} TiB"
     if mem >= BILLION:
         return f"{mem / BILLION:.3g} GiB"
-    return f"{mem / MILLION:.3g} MiB"
+    if mem >= MILLION:
+        return f"{mem / MILLION:.3g} MiB"
+    if mem >= THOUSAND:
+        return f"{mem / THOUSAND:.3g} KiB"
+    return f"{mem:.0f} B"
 
 
 class _MemInfo(Text):

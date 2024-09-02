@@ -3,6 +3,7 @@
 from batgrl.colors import Color
 from batgrl.text_tools import new_cell
 
+# TODO: Create color themes.
 FG_COLOR = Color.from_hex("f6a7a9")
 BG_COLOR = Color.from_hex("070c25")
 MIN_COLOR = Color.from_hex("1b244b")

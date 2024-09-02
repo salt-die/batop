@@ -48,6 +48,7 @@ class Bordered(Text):
                 "height_offset": -2,
                 "width_offset": -2,
             },
+            is_transparent=False,
         )
         self.add_gadget(self._content)
         self._rainbow_task: asyncio.Task | None = None
@@ -94,4 +95,6 @@ class Bordered(Text):
         """Redraw border on resize."""
         super().on_size()
         self.clear()
-        self.add_border(self.border)
+        if self.height > 2 and self.width > 2:
+            self.add_border(self.border)
+            rainbow(self.canvas["fg_color"])
