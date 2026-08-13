@@ -4,9 +4,9 @@ import asyncio
 from time import monotonic
 
 import numpy as np
-from batgrl.gadgets.gadget import Gadget
+from batgrl.gadgets.gadget import Gadget, PosHint
 from batgrl.gadgets.pane import Pane
-from batgrl.gadgets.text import Border, PosHint, Text
+from batgrl.gadgets.text import Border, Text
 
 from .colors import BG_COLOR, DEFAULT_CELL
 
@@ -53,7 +53,7 @@ class Bordered(Text):
         self.add_gadget(self._content)
         self._rainbow_task: asyncio.Task | None = None
 
-        self.border = border
+        self.border: Border = border
         self.add_border(border)
         hints: tuple[PosHint, ...] = (
             {"x_hint": 0, "x_offset": 2, "anchor": "left"},

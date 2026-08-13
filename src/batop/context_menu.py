@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
-from typing import Self
+from collections.abc import Callable, Iterator, Mapping
 
 from batgrl.gadgets.behaviors.button_behavior import ButtonBehavior
 from batgrl.gadgets.grid_layout import GridLayout
-from batgrl.gadgets.text import Point, Size, Text, new_cell, str_width
+from batgrl.gadgets.text import Point, Text
+from batgrl.geometry import Sizelike
 from batgrl.terminal.events import MouseEvent
+from batgrl.text_tools import new_cell
+from uwcwidth import wcswidth
 
 from .colors import MENU_FG, MENU_HOVER_BG, MENU_NORMAL_BG
 
-ItemCallback = Callable[[], None]
-type MenuDict = dict[tuple[str, str], ItemCallback | MenuDict]
+type MenuDict = Mapping[str, Callable[[], None] | MenuDict]
 NESTED_SUFFIX = "▶"
 
 
@@ -22,11 +23,11 @@ class _MenuItem(ButtonBehavior, Text):
         self,
         *,
         label: str,
-        item_callback: ItemCallback | None = None,
+        item_callback: Callable[[], None] | None = None,
         submenu: ContextMenu | None = None,
-        size: Size,
+        size: Sizelike,
     ):
-        self.parent: ContextMenu | None
+        self.parent: ContextMenu | None  # type: ignore
         self.label = label
         self.item_callback = item_callback
         self.submenu = submenu
@@ -52,6 +53,8 @@ class _MenuItem(ButtonBehavior, Text):
 
     def update_hover(self):
         """Update parent menu and submenu on hover state."""
+        assert self.parent
+
         self._repaint()
 
         index = self.parent.children.index(self)
@@ -83,6 +86,8 @@ class _MenuItem(ButtonBehavior, Text):
 
     def on_release(self):
         """Open submenu or call item callback on release."""
+        assert self.parent
+
         if self.submenu is not None:
             self.submenu.open_menu()
         elif self.item_callback is not None:
@@ -111,7 +116,7 @@ class ContextMenu(GridLayout):
         default way of constructing menus.
     """
 
-    def __init__(self, size: Size):
+    def __init__(self, size: Sizelike):
         h, _ = size
         super().__init__(grid_rows=h, grid_columns=1, size=size)
         self._parent_menu: ContextMenu | None = None
@@ -120,6 +125,8 @@ class ContextMenu(GridLayout):
 
     def open_menu(self):
         """Open the menu."""
+        assert self.parent
+
         # Position menu so that its visible.
         if self._parent_menu is not None:
             y = self._parent_menu.y + self._parent_menu._current_selection
@@ -257,7 +264,7 @@ class ContextMenu(GridLayout):
         return super().on_key(key_event)
 
     @classmethod
-    def from_dict_of_dicts(cls, menu: MenuDict) -> Iterator[Self]:
+    def from_dict_of_dicts(cls, menu: MenuDict) -> Iterator[ContextMenu]:
         """
         Create and yield menus from a dict of dicts. Callables should either have no
         arguments for a normal menu item, or one argument for a toggle menu item.
@@ -274,9 +281,11 @@ class ContextMenu(GridLayout):
         """
         height = len(menu)
         width = max(
-            (str_width(label) + 2 + isinstance(callable_or_dict, dict) * 2)
+            (wcswidth(label) + 2 + isinstance(callable_or_dict, dict) * 2)
             for label, callable_or_dict in menu.items()
         )
+        assert isinstance(width, int)
+
         menu_gadget = cls(size=(height, width))
 
         for label, value in menu.items():
@@ -290,7 +299,7 @@ class ContextMenu(GridLayout):
                     submenu.is_enabled = False
                     yield submenu
 
-                menu_item = _MenuItem(label=label, submenu=submenu, size=(1, width))
+                menu_item = _MenuItem(label=label, submenu=submenu, size=(1, width))  # type: ignore
             else:
                 raise TypeError(f"expected Callable or dict, got {type(value)}")
 

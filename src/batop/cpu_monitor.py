@@ -105,6 +105,7 @@ class _CoreMonitor(Movable, Bordered):
     def __init__(self, bar_width=10, **kwargs):
         super().__init__(**kwargs)
         ncpus = psutil.cpu_count()
+        assert ncpus
 
         self._grid = GridLayout(
             grid_rows=ceil(ncpus / 2),
@@ -134,7 +135,7 @@ class _CoreMonitor(Movable, Bordered):
         super().on_remove()
 
     async def _monitor_cpu(self):
-        cpu_monitor: CpuMonitor = self.parent.parent
+        cpu_monitor: CpuMonitor = self.parent.parent  # type: ignore
         while True:
             self._refresh_display()
             await asyncio.sleep(cpu_monitor.refresh_rate)
@@ -142,7 +143,7 @@ class _CoreMonitor(Movable, Bordered):
     def _refresh_display(self):
         total = psutil.cpu_percent() / 100
         times = psutil.cpu_times_percent()
-        cpu_monitor: CpuMonitor = self.parent.parent
+        cpu_monitor: CpuMonitor = self.parent.parent  # type: ignore
         if cpu_monitor._top_spark_option == "total":
             cpu_monitor._top_spark.append(total)
         else:
@@ -188,7 +189,7 @@ class CpuMonitor(Bordered):
         self._core_monitor = _CoreMonitor(
             left_header=platform.machine(),
             right_header=f"{psutil.cpu_freq().current / 1000:g} GHz",
-            disable_oob=True,
+            allow_oob=False,
         )
         self.content.add_gadgets(
             self._top_spark, self._bottom_spark, self._core_monitor

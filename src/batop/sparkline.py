@@ -3,8 +3,10 @@
 from collections import deque
 
 from batgrl.colors import Color, lerp_colors
-from batgrl.gadgets.text import Point, PosHint, Size, SizeHint, Text
-from batgrl.text_tools import new_cell, smooth_vertical_bar
+from batgrl.gadgets.gadget import PosHint, SizeHint
+from batgrl.gadgets.text import Text
+from batgrl.geometry import Point, Pointlike, Size, Sizelike
+from batgrl.text_tools import Style, new_cell, smooth_vertical_bar
 
 from .colors import BG_COLOR, FG_COLOR, MAX_COLOR, MIN_COLOR
 
@@ -23,8 +25,8 @@ class SparkLine(Text):
         fg_color: Color = FG_COLOR,
         bg_color: Color = BG_COLOR,
         alpha: float = 0.0,
-        size: Size = Size(10, 10),
-        pos: Point = Point(0, 0),
+        size: Sizelike = Size(10, 10),
+        pos: Pointlike = Point(0, 0),
         size_hint: SizeHint | None = None,
         pos_hint: PosHint | None = None,
         is_transparent: bool = False,
@@ -99,9 +101,12 @@ class SparkLine(Text):
         bar = smooth_vertical_bar(self.height, p, reversed=self.is_flipped)
         view = self.canvas if self.is_flipped else self.canvas[::-1]
         bar_view = view[: len(bar), x]
-        bar_view["char"] = bar
-        bar_view["reverse"] = self.is_flipped
+        bar_view["style"] = Style.REVERSE if self.is_flipped else Style.NO_STYLE
         bar_view["fg_color"] = lerp_colors(self.min_color, self.max_color, p)
+        if self.is_flipped:
+            self.chars[: len(bar), x] = bar
+        else:
+            self.chars[::-1][: len(bar), x] = bar
 
     def _refresh_display(self) -> None:
         self.canvas[:, :-1] = self.canvas[:, 1:]

@@ -7,7 +7,7 @@ import psutil
 from batgrl.colors import lerp_colors
 from batgrl.gadgets.stack_layout import VStackLayout
 from batgrl.gadgets.text import Text
-from batgrl.text_tools import smooth_vertical_bar
+from batgrl.text_tools import Style, smooth_vertical_bar
 
 from .bordered import Bordered
 from .colors import DEFAULT_CELL
@@ -23,7 +23,6 @@ class _ScalingSparkline(SparkLine):
     def on_size(self) -> None:
         """Refresh display on resize."""
         Text.on_size(self)
-        # super(SparkLine, self).on_size()
         self._max = self._calculate_max()
         self._rescale_bars()
 
@@ -47,17 +46,20 @@ class _ScalingSparkline(SparkLine):
                 mx = datum
         return mx
 
-    def _draw_bar(self, x: int, value: float) -> None:
-        """Draw a smooth bar with proportion ``value/self._max`` at ``x``."""
+    def _draw_bar(self, x: int, p: float) -> None:
+        """Draw a smooth bar with proportion ``p/self._max`` at ``x``."""
         if self._max == 0:
             return
-        p = value / self._max
+        p /= self._max
         bar = smooth_vertical_bar(self.height, p, reversed=self.is_flipped)
         view = self.canvas if self.is_flipped else self.canvas[::-1]
         bar_view = view[: len(bar), x]
-        bar_view["char"] = bar
-        bar_view["reverse"] = self.is_flipped
+        bar_view["style"] = Style.REVERSE if self.is_flipped else Style.NO_STYLE
         bar_view["fg_color"] = lerp_colors(self.min_color, self.max_color, p)
+        if self.is_flipped:
+            self.chars[: len(bar), x] = bar
+        else:
+            self.chars[::-1][: len(bar), x] = bar
 
     def _rescale_bars(self) -> None:
         self.clear()
@@ -67,11 +69,6 @@ class _ScalingSparkline(SparkLine):
             if x < 0:
                 break
             self._draw_bar(x, p)
-
-    def _refresh_display(self) -> None:
-        self.canvas[:, :-1] = self.canvas[:, 1:]
-        self.canvas[:, -1] = self.default_cell
-        self._draw_bar(-1, self._data[0])
 
 
 class NetworkMonitor(Bordered):

@@ -4,7 +4,8 @@ import asyncio
 
 import psutil
 from batgrl.gadgets.text import Text
-from batgrl.text_tools import smooth_horizontal_bar, str_width
+from batgrl.text_tools import smooth_horizontal_bar
+from uwcwidth import wcswidth
 
 from .bordered import Bordered
 from .colors import DEFAULT_CELL, GREEN, RED
@@ -51,10 +52,10 @@ class _MemInfo(Text):
         used = f"{format_mem(meminfo.used)} {meminfo.percent:4.3g}%"
         free = f"{format_mem(meminfo.free)} {100 - meminfo.percent:4.3g}%"
         self.add_str(total, truncate_str=True)
-        x = str_width(total) + 2
+        x = wcswidth(total) + 2
         if x < self.width:
             self.add_str(used, pos=(0, x), fg_color=RED, truncate_str=True)
-        x += str_width(used) + 2
+        x += wcswidth(used) + 2
         if x < self.width:
             self.add_str(free, pos=(0, x), fg_color=GREEN, truncate_str=True)
 
@@ -62,8 +63,7 @@ class _MemInfo(Text):
         bar_line["fg_color"] = RED
         bar_line["bg_color"] = GREEN
         bar = smooth_horizontal_bar(self.width, meminfo.percent / 100)
-        # raise SystemExit(self.canvas.shape, bar_line.shape, self.width, len(bar))
-        bar_line["char"][: len(bar)] = bar
+        self.chars[1, : len(bar)] = bar
 
 
 class MemoryMonitor(Bordered):

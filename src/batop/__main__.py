@@ -27,10 +27,14 @@ class Batop(App):
         process = ProcessMonitor(size_hint={"height_hint": 1.0, "width_hint": 1.0})
 
         hsplit = HSplitLayout(
-            size_hint={"height_hint": 1.0, "width_hint": 1.0}, min_split_height=15
+            size_hint={"height_hint": 1.0, "width_hint": 1.0},
+            top_min_height=15,
+            bottom_min_height=15,
         )
         vsplit = VSplitLayout(
-            size_hint={"height_hint": 1.0, "width_hint": 1.0}, min_split_width=50
+            size_hint={"height_hint": 1.0, "width_hint": 1.0},
+            left_min_width=50,
+            right_min_width=50,
         )
         hsplit.top_pane.add_gadget(cpu)
         hsplit.bottom_pane.add_gadget(vsplit)
